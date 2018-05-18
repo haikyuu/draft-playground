@@ -17,7 +17,7 @@ const Video = props => {
 }
 const Media = props => {
   const entity = props.contentState.getEntity(props.block.getEntityAt(0))
-  const { src } = entity.getData()
+  const { src, placeholder } = entity.getData()
   const type = entity.getType()
   let media = null
   if (type === "AUDIO") {
@@ -26,6 +26,17 @@ const Media = props => {
     media = <Image src={src} />
   } else if (type === "VIDEO") {
     media = <Video src={src} />
+  } else if (type === "BUTTON") {
+    media = <button>button</button>
+  } else if (type === "FORM") {
+    media = (
+      <input
+        type="text"
+        placeholder={placeholder}
+        onBlur={() => props.blockProps.onFinishEdit(props.block.key)}
+        onFocus={() => props.blockProps.onStartEdit(props.block.key)}
+      />
+    )
   }
   return media
 }

@@ -7,12 +7,17 @@ export default function convert(editorState, data = { userName: "Abdellah" }) {
   const contentState = editorState.getCurrentContent()
   return convertToHTML({
     entityToHTML(entity, originalText) {
-      console.log("entity to html: ", entity)
       if (entity.type === "IMAGE") {
         return <img src={entity.data.src} style={styles.media} />
       }
       if (entity.type === "VIDEO") {
         return <video controls src={entity.data.src} style={styles.media} />
+      }
+      if (entity.type === "BUTTON") {
+        return <button>button</button>
+      }
+      if (entity.type === "FORM") {
+        return <input type="text" placeholder={entity.data.placeholder} />
       }
       if (entity.type === "LINK") {
         return <a href={entity.data.url}>{originalText}</a>

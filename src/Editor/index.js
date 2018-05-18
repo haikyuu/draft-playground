@@ -8,12 +8,38 @@ import {
   AtomicBlockUtils
 } from "draft-js"
 import decorators from "./decorators"
-import blockRenderer from "./blockRenderer"
+import Media from "./blockRenderer/Media"
 
 export default class MyEditor extends React.Component {
   state = {
     html: "",
+    liveEdits: new Map(),
     editorState: EditorState.createEmpty(decorators)
+  }
+  _blockRenderer = contentBlock => {
+    const type = contentBlock.getType()
+    if (type === "atomic") {
+      return {
+        component: Media,
+        editable: false,
+        props: {
+          onStartEdit: blockKey => {
+            var { liveEdits } = this.state
+            this.setState({ liveEdits: liveEdits.set(blockKey, true) })
+          },
+          onFinishEdit: (blockKey, newContentState) => {
+            var { liveEdits } = this.state
+            const newMap = new Map(liveEdits)
+            newMap.delete(blockKey)
+            this.setState({
+              liveEdits: new Map(newMap)
+              // editorState:EditorState.createWithContent(newContentState),
+            })
+          }
+        }
+      }
+    }
+    return null
   }
   _onConvertClick = () => {
     const { editorState } = this.state
@@ -145,10 +171,59 @@ export default class MyEditor extends React.Component {
     )
     this._onChange(editorStateWithImage)
   }
+  _onButtonClick = () => {
+    const { editorState } = this.state
+
+    const contentState = editorState.getCurrentContent()
+    // create entity
+    const contentStateWithEntity = contentState.createEntity(
+      "BUTTON",
+      "IMMUTABLE",
+      {}
+    )
+    // get entity key
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
+    // create a new editor state with the entity added to the content
+    const newEditorState = EditorState.set(editorState, {
+      currentContent: contentStateWithEntity
+    })
+
+    const editorStateWithImage = AtomicBlockUtils.insertAtomicBlock(
+      newEditorState,
+      entityKey,
+      " "
+    )
+    this._onChange(editorStateWithImage)
+  }
+  _onFormClick = () => {
+    const { editorState } = this.state
+
+    const contentState = editorState.getCurrentContent()
+    // create entity
+    const contentStateWithEntity = contentState.createEntity(
+      "FORM",
+      "IMMUTABLE",
+      { placeholder: "email" }
+    )
+    // get entity key
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
+    // create a new editor state with the entity added to the content
+    const newEditorState = EditorState.set(editorState, {
+      currentContent: contentStateWithEntity
+    })
+
+    const editorStateWithImage = AtomicBlockUtils.insertAtomicBlock(
+      newEditorState,
+      entityKey,
+      " "
+    )
+    this._onChange(editorStateWithImage)
+  }
   render() {
     const { html, editorState } = this.state
     return (
       <div>
+        <h3>{this.state.liveEdits.size}</h3>
         <h3>Editor</h3>
         <div className="ba b--blue min-h4 mb2 pa1">
           <div className="">
@@ -157,13 +232,16 @@ export default class MyEditor extends React.Component {
             <button onClick={this._onUserNameClick}>User Name</button>
             <button onClick={this._onImageClick}>Image</button>
             <button onClick={this._onVideoClick}>Video</button>
+            <button onClick={this._onButtonClick}>Button</button>
+            <button onClick={this._onFormClick}>Form</button>
           </div>
           <div className="min-h4 editor-container">
             <Editor
+              readOnly={this.state.liveEdits.size}
               editorState={editorState}
               onChange={this._onChange}
               handleKeyCommand={this._handleKeyCommand}
-              blockRendererFn={blockRenderer}
+              blockRendererFn={this._blockRenderer}
             />
           </div>
         </div>
