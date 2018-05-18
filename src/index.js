@@ -1,8 +1,8 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import registerServiceWorker from './registerServiceWorker';
+import React from "react"
+import ReactDOM from "react-dom"
+import "draft-js/dist/Draft.css"
+import "./index.css"
+import "tachyons/css/tachyons.min.css"
+import Editor from "./Editor"
 
-ReactDOM.render(<App />, document.getElementById('root'));
-registerServiceWorker();
+ReactDOM.render(<Editor />, document.getElementById("root"))
